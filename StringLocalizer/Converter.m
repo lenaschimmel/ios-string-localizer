@@ -57,6 +57,8 @@
     NSArray* lines = [fileContents componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
     
     NSError *error = NULL;
+    
+    // TODO: catch key = nil and key = @"" in the same way, and emit a warning that there's a key missing.
     NSRegularExpression *regexNeedsLocalization = [NSRegularExpression
                                                    regularExpressionWithPattern:@"NEEDS_LOCALIZATION\\h*\\(@\"(.*?[^\\\\])\", @\"(.*?[^\\\\])\", (.*?[^\\\\])\\)"
                                                    options:NSRegularExpressionCaseInsensitive
@@ -67,7 +69,7 @@
                                                    options:NSRegularExpressionCaseInsensitive
                                                    error:&error];
     
-    //output(@"%@\n", fileName);
+    //output(@"File: %@ has %d lines.\n", filePath, lines.count);
     
     NSMutableString* newSourceFile =[NSMutableString string];
     BOOL firstLine = YES;

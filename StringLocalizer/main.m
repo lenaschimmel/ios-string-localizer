@@ -16,7 +16,9 @@ int main(int argc, const char * argv[]) {
             NSMutableString* string = [NSMutableString stringWithUTF8String:argv[i]];
             if([string characterAtIndex:0] == '"') {
                 while([string characterAtIndex:string.length-1] != '"') {
-                    [string appendString:[NSString stringWithUTF8String:argv[++i]]];
+                    [string appendString:@" "];
+                    [string appendString:[NSString stringWithUTF8String:argv[1+i]]];
+                    i++;
                 };
                 [args addObject:[string substringWithRange:NSMakeRange(1, string.length - 2)]];
             } else {
@@ -35,7 +37,7 @@ int main(int argc, const char * argv[]) {
         if(args.count >= optionIndexStringsFile && optionIndexSeparator > optionIndexStringsFile && optionIndexSeparator != NSNotFound) {
             NSString* stringsFilePath =[args objectAtIndex:optionIndexStringsFile];
             
-            Converter* converter = [[Converter alloc] initWithOptions:[args subarrayWithRange:NSMakeRange(1, args.count - 2)]];
+            Converter* converter = [[Converter alloc] initWithOptions:[args subarrayWithRange:NSMakeRange(1, args.count - 1)]];
             [converter readStringsFile:stringsFilePath];
             
             [converter convertAllFiles];
