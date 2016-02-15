@@ -152,17 +152,12 @@
     return @"";
 }
 
--(void) writeStringsFile:(NSString*)stringsFilePath {
-    NSError *error = NULL;
-    
-    NSMutableString* newStringsFile = [NSMutableString string];
-    NSMutableString* newStringsDummyFile = [NSMutableString string];
-    
+-(NSArray<NSString*> *) sortedKeys {
     NSArray* sortedKeys = [self.entries.allKeys sortedArrayUsingComparator:^NSComparisonResult(NSString*  _Nonnull string1, NSString*  _Nonnull string2) {
-
+        
         NSString* prefix1 = [self prefixUntilUnderscore:string1];
         NSString* prefix2 = [self prefixUntilUnderscore:string2];
-       
+        
         
         if(prefix2.length && !prefix1.length) {
             return NSOrderedAscending;
@@ -179,6 +174,55 @@
         }
         return [string1 compare:string2];
     }];
+    return sortedKeys;
+}
+
+-(void) writeSwiftStringsFile:(NSString*)stringsFilePath {
+    NSError *error = NULL;
+    
+    NSMutableString* newStringsFile = [NSMutableString string];
+    
+    NSArray* sortedKeys =  [self sortedKeys];
+    
+    NSString* lastPrefix = nil;
+    for (__strong NSString* key in sortedKeys) {
+        NSString* value = [self.entries valueForKey:key];
+        NSString* prefix =  [self prefixUntilUnderscore:key];
+        if(![prefix isEqualToString:lastPrefix]) {
+            if(lastPrefix != nil) {
+                [newStringsFile appendFormat:@"}\n"];
+            }
+            
+            [newStringsFile appendFormat:@"\n\nstruct %@Strings {\n", prefix];
+            lastPrefix = prefix;
+        }
+        NSString* comment = [self.commentEntries valueForKey:key];
+        if(comment) {
+            [newStringsFile appendFormat:@"    // %@\n", comment];
+        }
+        if(prefix.length > 0 ) {
+            key = [key substringFromIndex:prefix.length + 1];
+        }
+        key = [key stringByReplacingOccurrencesOfString:@"_" withString:@""];
+        [newStringsFile appendFormat:@"    static let %@ = \"%@\"\n", key, value];
+    }
+    [newStringsFile appendFormat:@"}\n"];
+    
+    
+    if([self.options containsObject:@"-o"]) {
+        [newStringsFile writeToFile:stringsFilePath atomically:YES encoding:NSUTF8StringEncoding error:&error];
+    }
+    if([self.options containsObject:@"-l"]) {
+        output(@"Swift:\n%@\n", newStringsFile);
+    }
+}
+-(void) writeStringsFile:(NSString*)stringsFilePath {
+    NSError *error = NULL;
+    
+    NSMutableString* newStringsFile = [NSMutableString string];
+    NSMutableString* newStringsDummyFile = [NSMutableString string];
+    
+    NSArray* sortedKeys =  [self sortedKeys];
     
     NSString* lastPrefix = @"";
     for (NSString* key in sortedKeys) {

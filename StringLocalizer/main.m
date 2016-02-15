@@ -30,21 +30,25 @@ int main(int argc, const char * argv[]) {
         NSInteger optionIndexKeysFlag = [args indexOfObject:@"-k"];
         NSInteger optionIndexValuesFlag = [args indexOfObject:@"-v"];
         NSInteger optionIndexStringsFile = [args indexOfObject:@"-s"] + 1;
+        NSInteger optionIndexSwiftFlag = [args indexOfObject:@"-c"];
         NSInteger optionIndexSeparator = [args indexOfObject:@"--"];
         NSInteger optionIndexUnusedFlag = [args indexOfObject:@"-u"];
         NSInteger optionIndexMissingFlag = [args indexOfObject:@"-m"];
         
         if(args.count >= optionIndexStringsFile && optionIndexSeparator > optionIndexStringsFile && optionIndexSeparator != NSNotFound) {
             NSString* stringsFilePath =[args objectAtIndex:optionIndexStringsFile];
-            
+        
             Converter* converter = [[Converter alloc] initWithOptions:[args subarrayWithRange:NSMakeRange(1, args.count - 1)]];
             [converter readStringsFile:stringsFilePath];
             
             [converter convertAllFiles];
             
-
-
             [converter writeStringsFile:stringsFilePath];
+            
+            if(optionIndexSwiftFlag != NSNotFound) {
+                NSString* swiftFilePath = [args objectAtIndex:optionIndexSwiftFlag + 1];
+                [converter writeSwiftStringsFile:swiftFilePath];
+            }
             
             if(optionIndexValuesFlag != NSNotFound) {
                 [converter findDuplicateValues];
@@ -63,7 +67,7 @@ int main(int argc, const char * argv[]) {
             }
 
         } else {
-            output(@"Too few options. Syntax is:\n\nStringLocalizer [-o [-d dummylang]][-k][-v][-u][-m][-w] [-j base] -s StringsPath -- InputPath(s)\n");
+            output(@"Too few options. Syntax is:\n\nStringLocalizer [-o [-d dummylang]][-k][-v][-u][-m][-w] [-j base] -s StringsPath  [-c SwiftPath] -- InputPath(s)\n");
             output(@"\n");
             output(@"Options are as follows:\n");
             output(@"\t-o\tOutput into files. This overwrites the strings-file and each given source file.\n");
@@ -76,6 +80,7 @@ int main(int argc, const char * argv[]) {
             //output(@"\t-j\tJoin all the keys that share the specified base. This only works if all matching keys have the same value. Base is used as the new key. Only effective if used with -w or -o. Can be used multiple times per invocation.\n");
             output(@"\t-i\tInteractively join keys. This will display one suggestion at a time and ask if and how it should be merged.\n");
             output(@"\t-s\tThe next argument will be the path to the strings file.\n");
+            output(@"\t-c\tWrite a Swift file with constants to the given path\n");
             output(@"\t--\tThe next argument(s) will be source file(s).\n");
         }
     }

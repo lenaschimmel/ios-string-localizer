@@ -17,6 +17,7 @@
 
 -(void) readStringsFile:(NSString*)stringsFilePath;
 -(void) writeStringsFile:(NSString*)stringsFilePath;
+-(void) writeSwiftStringsFile:(NSString*)stringsFilePath;
 
 -(void)findMissingKeys;
 -(void)findUnusedKeys;
